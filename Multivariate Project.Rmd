@@ -1,0 +1,163 @@
+---
+title: "Hw3"
+author: "Frank Jiang"
+date: "3/3/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Question 1:
+a)
+```{r}
+library(smacof)
+data(helm)
+```
+Color wheel is an arrangement of hues aronud a circle, which shows the relationship between primary colors, secondary colors, tertiary colors. For participants with normal color vision, they should percieve different color with great contrast. Thus, if two colors on a color wheel are far from each other, we can expect their perception are with a considerable gap. With our dataset collecting the infomration on people with normal color vision's response to different colors, we can expect the configuration plot to look like the color wheel with a circle shape.   
+
+b)
+```{r}
+N1_dist<- helm$N1
+#Ratio MDS
+N1.mds.ratio<- mds(N1_dist,type = "ratio")
+#configuration plot
+plot(N1.mds.ratio)
+#resplot
+plot(N1.mds.ratio, plot.type ="resplot")
+#stress
+N1.mds.ratio$stress
+#stress per point
+summary(N1.mds.ratio)
+
+#Interval MDS
+N1.mds.interval<- mds(N1_dist,type = "interval")
+#configuration plot
+plot(N1.mds.interval)
+#resplot
+plot(N1.mds.interval, plot.type = "resplot")
+#stress
+N1.mds.interval$stress
+#stress per point
+summary(N1.mds.interval)
+
+#Ordinal MDS
+N1.mds.ordinal<- mds(N1_dist,type ="ordinal")
+#configuration plot
+plot(N1.mds.ordinal)
+#resplot
+plot(N1.mds.ordinal, plot.type = "resplot")
+#stress
+N1.mds.ordinal$stress
+#stress per point
+summary(N1.mds.ordinal)
+```
+According to the MDS examination, we can tell that the configuration appear to comform to the color wheel hypothesis. 
+
+c)
+```{r}
+#Spherically-constrained ordinal analysis
+N1.Sphere.ordinal<- smacofSphere(N1_dist, type = "ordinal")
+#configuration plot
+plot(N1.Sphere.ordinal)
+#resplot
+plot(N1.Sphere.ordinal, plot.type = "resplot")
+#stress
+N1.Sphere.ordinal$stress
+#stress per point
+summary(N1.Sphere.ordinal)
+```
+The data comform really well to the hypothesis as the configuration plot forms a color-circle. There does not exist a large loss of fitted data comparing to allowing the configuration to be free. Therefore, we can conclude that the color circle hypothesis is true. The spherical fit differs with the ordinal fit at the small amount of loss fitted at the end of the residual plot. When the normalized dissmilaries approaching 1.5, the fitted data seems to be off the fitted line comparing to the ordinal analysis. 
+
+d)
+```{r}
+#Spherically-constrained ordinal analysis with CD4
+CD4_dist<- helm$CD4
+CD4.Sphere.ordinal<- smacofSphere(CD4_dist, type = "ordinal")
+#configuration plot
+plot(CD4.Sphere.ordinal)
+#resplot
+plot(CD4.Sphere.ordinal, plot.type = "resplot")
+#stress
+CD4.Sphere.ordinal$stress
+#stress per point
+summary(CD4.Sphere.ordinal)
+```
+The figure agrees with the color wheel hypothesis, as the configuration graph does not form the shape of circle since the participant has abnormal color vision. As we can observe in the graph, there is not a large enough amount of dissimilarity between different colors such as grey, yellow; The configuration graph of CD4 form a larger sphere which is different from the full circle of N1. In conclusion, grey1, and yellow; navy and purple seems to be similar for the participant. 
+
+e)
+Yes, I believe that using MDS to analyze color comparison data can lead to a development of a test for color-deficient vision. First of all, MDS provide a analysis on the color comparison data that are collected from the tester. If the configuration plot does not form to be a circle, then there might be a color-deficient according to the color circle hypothesis.Then, we can further analyze what color are similar to the participant by observing the dissimilarity between two different colors. 
+
+Question 2:
+
+a)
+```{r}
+library(readxl)
+library(vcd)
+VIJ_data<- read_excel("vIJ.xlsx")
+#data cleaning
+VIJ_collab<- c("Avoidant","Secure","Resistant")
+VIJ_rowlab<- c("GE","UK","NL","SW","IS","JP","CH","US")
+VIJ_tab<- as.table(matrix(
+                 c(48,  77,  11,
+                   16,  54,   2,
+                   66, 169,  16,
+                   11,  38,   2,
+                    8,  76,  34,
+                    5,  65,  26,
+                    9,  18,   9,
+                  260, 797, 173),
+                  byrow=T, ncol=3))
+rownames(VIJ_tab)<- VIJ_rowlab
+colnames(VIJ_tab)<- VIJ_collab
+#pearson chi-square analysis
+chisq.test(VIJ_tab)
+chisq.test(VIJ_tab)$res
+chisq.test(VIJ_tab)$std
+mosaic(VIJ_tab,shade=TRUE)
+assoc(VIJ_tab,shade=TRUE)
+```
+According to the pearson chi-square test, our p-value is 1.626*e^-15 which is lower than the signifance level(0.05), therefore, I would say that the data is not indepedent. There is a association between different country and the characteristics of the infants. It makes sense in a way that in different countries, culture might include infant's attitude to caregivers, also the training that caregiver recieves might be different in each country. 
+
+b)
+```{r}
+library(FactoMineR)
+#component score
+VIJ.PCA<- PCA(VIJ_data[,-1], graph =F)
+summary(VIJ.PCA)
+#PCA graph
+PCA(VIJ_data[,-1])
+#eigenvalues
+VIJ.PCA$eig
+```
+Base on the PCA we run on this dataset, we can conclude that there is probably only dimension of data that matters since 97% of the variance can be explained or heavily lie on the first dimension. Therefore, there is no really point of performing PCA on a dataset that only has one dimension of data. However, we could apply Correspondence analysis in this situation. As the data itself is a cross-tabular data that are categorical or ratio-scale. 
+
+c)
+```{r}
+library(ca)
+library(factoextra)
+VIJ_CA<- CA(VIJ_tab, ncp=5,graph=TRUE)
+VIJ_CA
+summary(VIJ_CA)
+#scree plot
+fviz_screeplot(VIJ_CA, addlabels = TRUE)
+```
+From the Correspondence analysis we performed above, we can conclude that most of the variance can be explained in a two-dimensional scale. We can tell that UK and SW; IS and JP are relatively similar to each other in its baby's response when the caregiver is out of sight. This matches the row profiles that are given, the distribution of baby's response of secure, resistant, and avoidant are similar between UK and SW; IS and JP. Also, take NL as an example, we can tell by its distance with origin and the angle it forms with the column variable that NL is strongly associated with the response secure. All of the above indicates that it is consistent with the row profiles. 
+
+d)
+```{r}
+get_eigenvalue(VIJ_CA)
+```
+From the CA we run, we can find out that there only exists two eigenvalue after the decomposition using the scaling data. It is essentially project the high dimensional space into two-dimensional subspace. Also, the percentage of variance can be completely explained by only two dimension. Therefore, the data are accounted by two dimensions in the correspondence analysis. 
+
+e)
+```{r}
+#make USA supplementary
+USA_sup_CA<- CA(VIJ_tab, ncp= 5, row.sup = c(8), col.sup = NULL, graph = T)
+USA_sup_CA
+summary(USA_sup_CA)
+#original ca
+CA(VIJ_tab, ncp=5,graph=TRUE)
+```
+After making USA supplementary in the correspondence analysis, we can conclude that there are not major changes to the configuration plot. The similarity between countries does not affected by making USA a supplementary row. However, the column variable(response) are shifted away from the origin. This implies that the column varible now has a greater impact on the correspondence analysis. And the association of the column variable(response) with the row variable(countries) are stronger than before. However, one thing that seems odd is the fact that GE have a stronger association with "Avoidant" while the row profiles suggest otherwise. The row profiles indicates that more response are chosen as "Secure".
